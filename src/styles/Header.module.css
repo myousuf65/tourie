@@ -1,9 +1,10 @@
+
 .header {
 	display: flex;
 	justify-content: space-between;
 	align-items: center;
-	padding-top: 5px;
-	padding-bottom: 5px;
+	padding-top: 10px;
+	padding-bottom: 10px;
 	padding-left: 20px;
 	padding-right: 20px;
 	background-color: #fff;
@@ -18,7 +19,6 @@
 }
 
 .nav a {
-	margin: 0 20px;
 	text-decoration: none;
 	color: #333;
 	font-size: 1.1rem;
@@ -26,4 +26,12 @@
 
 .nav a:hover {
 	color: #ff7e5f;
+}
+
+.login{
+	display: flex;
+	flex-direction: column;	
+	align-items: center;
+	justify-content: center;
+	width: fit-content,
 }

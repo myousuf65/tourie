@@ -1,11 +1,11 @@
-import React, { useContext, useEffect, useState } from 'react';
-import styles from '../styles/UserProfile.module.css';
+import React, { useContext, useEffect, useState } from "react";
+import styles from "../styles/UserProfile.module.css";
 import User from "../images/user.png";
-import { message, Modal, Spin, Button, Tabs } from 'antd';
-import { useNavigate } from 'react-router';
-import { LoginContext } from '../App';
-import TourCard from './TourCard';
-import EditableTourCard from './EditableTourCard';
+import { message, Modal, Spin, Button, Tabs } from "antd";
+import { useNavigate } from "react-router";
+import { LoginContext } from "../App";
+import TourCard from "./TourCard";
+import EditableTourCard from "./EditableTourCard";
 
 const { TabPane } = Tabs;
 
@@ -17,40 +17,66 @@ const UserProfile = () => {
 	const navigate = useNavigate();
 	const { loggedIn, setLoggedIn } = useContext(LoginContext);
 	const [tours, setTours] = useState([]);
-	const [showDeleteModal, setShowDeleteModal] = useState(false)
+	const [showDeleteModal, setShowDeleteModal] = useState(false);
 
-	const handleDeleteItem = (itemName) => {
-		fetch(`${backend_url}/tour/delete/${itemName}`,{
-			method:"GET",
-			credentials : "include"
+	const handleDeleteItem = (itemName, tourId) => {
+		fetch(`${backend_url}/tour/delete`, {
+			method: "POST",
+			credentials: "include",
+			headers: {
+				"Content-Type": "application/json",
+			},
+			body: JSON.stringify({
+				username: sessionStorage.getItem("username"),
+				tour: tourId
+			})
 		})
-		.then(res => res.json())
-		.then(data => {
-			if(data === "delete success"){
-				message.success("Tour Deleted")	
-			}
-		})
-	}
+			.then((res) => {
+				if (!res.ok) {
+					console.error(res.status, res)
+					// throw new Error('Error Deleting Item')
+				}
+				return res.text()
+			})
+			.then((data) => {
+				console.log(data)
+				if (data === "delete success") {
+					message.success("Tour Deleted");
+					setTours(prevState => {
+						return prevState.filter(item => item.tourId !== tourId); // Corrected return statement.
+					});
+				}
+			})
+			.catch(error => {
+				message.error("Error Deleting item")
+				console.log(error.message)
+			})
+	};
 
-	const handleShowModal = (itemName) => {
-		console.log(itemName)
-		Modal.warn({
-			title: 'Are you sure you want to delete tour: ' + itemName + '?',
+	const handleShowModal = (itemName, tourId) => {
+		console.log(itemName, tourId);
+		Modal.confirm({
+			title: "Are you sure you want to delete tour: " + itemName + "?",
+			okText: "Delete",
+			cancelText: "Cancel",
 			onOk() {
-				handleDeleteItem(itemName)
+				handleDeleteItem(itemName, tourId);
 			},
 			onCancel() {
-				console.log('Action canceled');
+				console.log("Action canceled");
 			},
-		})
-	}
+		});
+	};
 
 	useEffect(() => {
 		setLoading(true);
-		fetch(`${backend_url}/auth/getdetails/${sessionStorage.getItem("username")}`, {
-			method: "POST",
-			credentials: "include",
-		})
+		fetch(
+			`${backend_url}/auth/getdetails/${sessionStorage.getItem("username")}`,
+			{
+				method: "POST",
+				credentials: "include",
+			}
+		)
 			.then((res) => res.json())
 			.then((data) => {
 				console.log("data returned ", data);
@@ -59,20 +85,22 @@ const UserProfile = () => {
 				setLoading(false);
 			});
 
-
-		fetch(`${backend_url}/tour/getbyusername/${sessionStorage.getItem("username")}`, {
-			method: "GET",
-			credentials: "include"
-		})
-			.then(res => {
-				console.log(res.status)
-				console.log(res)
-				return res.json()
+		fetch(
+			`${backend_url}/tour/getbyusername/${sessionStorage.getItem("username")}`,
+			{
+				method: "GET",
+				credentials: "include",
+			}
+		)
+			.then((res) => {
+				console.log(res.status);
+				console.log(res);
+				return res.json();
 			})
-			.then(data => {
-				console.log(data)
-				setTours(data)
-			})
+			.then((data) => {
+				console.log(data);
+				setTours(data);
+			});
 	}, []);
 
 	const handleLogout = () => {
@@ -100,9 +128,9 @@ const UserProfile = () => {
 	};
 
 	const bookingHistory = [
-		{ id: 1, date: '2023-10-01', service: 'Hotel Booking', amount: '$150' },
-		{ id: 2, date: '2023-09-25', service: 'Flight Booking', amount: '$300' },
-		{ id: 3, date: '2023-09-20', service: 'Car Rental', amount: '$80' },
+		{ id: 1, date: "2023-10-01", service: "Hotel Booking", amount: "$150" },
+		{ id: 2, date: "2023-09-25", service: "Flight Booking", amount: "$300" },
+		{ id: 3, date: "2023-09-20", service: "Car Rental", amount: "$80" },
 	];
 
 	return (
@@ -124,24 +152,22 @@ const UserProfile = () => {
 							type="primary"
 							danger
 							style={{
-								marginTop: '10px',
+								marginTop: "10px",
 							}}
 						>
 							Logout
 						</Button>
 						<Button
 							onClick={() => {
-								navigate("/upload")
+								navigate("/upload");
 							}}
 							type="primary"
 							style={{
-								marginTop: '10px',
+								marginTop: "10px",
 							}}
 						>
 							Upload
 						</Button>
-
-
 					</div>
 				</div>
 
@@ -174,19 +200,19 @@ const UserProfile = () => {
 					<TabPane tab="Tours Uploaded" key="2">
 						<div className={styles.app}>
 							<h3 className={styles.title}>Tours Uploaded</h3>
-							<Modal
-								title="Basic Modal"
-								visible={showDeleteModal}
+							<div
+								style={{ display: "flex", flexWrap: "wrap", height: "100%" }}
+								className={styles.tourList}
 							>
-								fuck you
-							</Modal>
-							<div style={{ display: "flex", height: "100%" }} className={styles.tourList}>
 								{tours.map((tour) => (
-									<EditableTourCard key={tour.id} tour={tour} handleShowModal={handleShowModal} />
+									<EditableTourCard
+										key={tour.id}
+										tour={tour}
+										handleShowModal={handleShowModal}
+									/>
 								))}
 							</div>
 						</div>
-
 					</TabPane>
 				</Tabs>
 			</div>
