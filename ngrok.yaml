@@ -1,0 +1,11 @@
+version: '2'
+authtoken: 29JtTtJpTFdIkX11XYU7WREli8E_2LePG61EGUkDvY72fF9Ng
+tunnels:
+  web1:
+    proto: http
+    addr: 3000
+    hostname: sub1.touched-intent-monitor.ngrok-free.app
+  web2:
+    proto: http
+    addr: 8080
+    hostname: sub2.touched-intent-monitor.ngrok-free.app

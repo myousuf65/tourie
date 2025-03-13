@@ -1,13 +1,14 @@
-import { message } from 'antd';
+import { message, Spin } from 'antd';
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router';
 import styles from '../styles/SignUpPage.module.css';
 
 const SignUpPage = () => {
 	const backend_url = process.env.REACT_APP_BACKEND_URL;
-	
+
 	const navigate = useNavigate();
 	const [email, setEmail] = useState('');
+	const [loading, setLoading] = useState(false)
 	const [password, setPassword] = useState('');
 	const [name, setName] = useState('');
 	const [confirmPassword, setConfirmPassword] = useState('');
@@ -16,12 +17,13 @@ const SignUpPage = () => {
 		e.preventDefault();
 
 		if (password !== confirmPassword) {
-			message.error("Passwords not matching")	
+			message.error("Passwords not matching")
 			return;
 		}
 
 		console.log('Sign Up attempted with:', { email, password, name });
 
+		setLoading(true)
 		fetch(`${backend_url}/auth/signup`, {
 			method: "POST",
 			credentials: "include",
@@ -46,6 +48,8 @@ const SignUpPage = () => {
 				navigate("/login")
 			}).catch(error => {
 				message.error(error.message)
+			}).finally(()=>{
+				setLoading(false)
 			})
 	};
 
@@ -53,41 +57,43 @@ const SignUpPage = () => {
 		<div className={styles.signUpPage}>
 			<div className={styles.formContainer}>
 				<h2 className={styles.title}>Create a new account</h2>
-				<form onSubmit={handleSignUp}>
-					<input
-						type="text"
-						placeholder="Full Name"
-						className={styles.inputField}
-						value={name}
-						onChange={(e) => setName(e.target.value)}
-						required
-					/>
-					<input
-						type="email"
-						placeholder="Email"
-						className={styles.inputField}
-						value={email}
-						onChange={(e) => setEmail(e.target.value)}
-						required
-					/>
-					<input
-						type="password"
-						placeholder="Password"
-						className={styles.inputField}
-						value={password}
-						onChange={(e) => setPassword(e.target.value)}
-						required
-					/>
-					<input
-						type="password"
-						placeholder="Confirm Password"
-						className={styles.inputField}
-						value={confirmPassword}
-						onChange={(e) => setConfirmPassword(e.target.value)}
-						required
-					/>
-					<button type="submit" className={styles.submitButton}>Sign up</button>
-				</form>
+				<Spin spinning={loading}>
+					<form onSubmit={handleSignUp}>
+						<input
+							type="text"
+							placeholder="Full Name"
+							className={styles.inputField}
+							value={name}
+							onChange={(e) => setName(e.target.value)}
+							required
+						/>
+						<input
+							type="email"
+							placeholder="Email"
+							className={styles.inputField}
+							value={email}
+							onChange={(e) => setEmail(e.target.value)}
+							required
+						/>
+						<input
+							type="password"
+							placeholder="Password"
+							className={styles.inputField}
+							value={password}
+							onChange={(e) => setPassword(e.target.value)}
+							required
+						/>
+						<input
+							type="password"
+							placeholder="Confirm Password"
+							className={styles.inputField}
+							value={confirmPassword}
+							onChange={(e) => setConfirmPassword(e.target.value)}
+							required
+						/>
+						<button type="submit" className={styles.submitButton}>Sign up</button>
+					</form>
+				</Spin>
 				<p className={styles.switchPage}>
 					Already have an account? <Link to="/login">Log in</Link>
 				</p>
