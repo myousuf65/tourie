@@ -17,7 +17,7 @@ import { Link } from "react-router-dom";
 import { FaUser } from "react-icons/fa";
 import ProtectedRoutes from "./utils/ProtectedRoutes";
 import AllTours from "./components/AllTours";
-import Test from "./components/Test";
+import EditTour from "./components/EditTour";
 
 export const LoginContext = React.createContext();
 
@@ -61,9 +61,9 @@ function App() {
           <Route path="/login" element={<LoginPage />} />
           <Route path="/signup" element={<SignUpPage />} />
           <Route path="/tours" element={<AllTours />} />
-          <Route path="/test" element={<Test />} />
           <Route element={<ProtectedRoutes />}>
             <Route path="/profile" element={<UserProfile />} />
+            <Route path="/edit" element={<EditTour />} />
             <Route path="/upload" element={<UploadTour />} />
           </Route>
         </Routes>
