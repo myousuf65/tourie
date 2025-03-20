@@ -161,7 +161,7 @@ const EditTour = () => {
 							/>
 						</div>
 						<div className={styles.formGroup}>
-							<label htmlFor="description">Description:</label>
+							<label htmlFor="description">Date and Time:</label>
 							<textarea
 								id="description"
 								name="description"

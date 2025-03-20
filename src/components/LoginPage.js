@@ -3,7 +3,7 @@ import { useNavigate } from "react-router";
 import { LoginContext } from "../App";
 import styles from "../styles/LoginPage.module.css";
 import { Link } from 'react-router';
-import { Spin } from "antd";
+import { message, Spin } from "antd";
 
 const LoginPage = () => {
 	const { loggedIn, setLoggedIn } = useContext(LoginContext);
@@ -28,16 +28,28 @@ const LoginPage = () => {
 				email: "",
 			}),
 		})
-			.then((res) => res.text())
+			.then((res) => {
+				if (!res.ok) {
+					throw new Error("Error : ", res.status)
+				}
+				return res.text()
+			})
 			.then((data) => {
 				console.log(data)
-				sessionStorage.setItem("loggedIn", true)
-				sessionStorage.setItem("username", username)
-				setLoading(false);
-				navigate("/")
-				setLoggedIn(true)
-
-			});
+				if (data === "USER IS LOGGED IN") {
+					sessionStorage.setItem("loggedIn", true)
+					sessionStorage.setItem("username", username)
+					setLoading(false);
+					navigate("/profile")
+					setLoggedIn(true)
+				} else {
+					console.log(data)
+				}
+			}).catch(e => {
+				message.error(e.message)
+				setLoading(false)
+			})
+			;
 	};
 
 

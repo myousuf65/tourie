@@ -1,0 +1,80 @@
+.container{
+	/* border: 1px solid green; */
+	/* height: 100vh; */
+	width: 100%;
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+}
+
+.tourPage {
+	display: flex;
+	/* border: 1px solid red; */
+	max-width: 1000px;
+	margin: 20px auto;
+	padding: 20px;
+	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+	border-radius: 8px;
+	background-color: white;
+}
+
+.imageContainer {
+	flex: 1;
+	margin-right: 20px;
+}
+
+.tourImage {
+	width: 100%;
+	height: auto;
+	border-radius: 8px;
+	object-fit: cover;
+}
+
+.infoContainer {
+	flex: 1;
+	display: flex;
+	flex-direction: column;
+}
+
+.tourName {
+	font-size: 2em;
+	margin-bottom: 10px;
+}
+
+.tourDescription {
+	margin-bottom: 15px;
+	line-height: 1.6;
+}
+
+.tourPrice,
+.tourUploader {
+	margin-bottom: 8px;
+}
+
+.bookButton {
+	background-color: #007bff;
+	color: white;
+	padding: 10px 20px;
+	border: none;
+	border-radius: 5px;
+	cursor: pointer;
+	font-size: 1em;
+	align-self: flex-start;
+	margin-top: 20px;
+}
+
+.bookButton:hover {
+	background-color: #0056b3;
+}
+
+@media (max-width: 768px) {
+	.tourPage {
+		flex-direction: column;
+	}
+
+	.imageContainer {
+		margin-right: 0;
+		margin-bottom: 20px;
+	}
+}

@@ -1,7 +1,7 @@
 import React, { useContext, useEffect, useState } from "react";
 import styles from "../styles/UserProfile.module.css";
 import User from "../images/user.png";
-import { message, Modal, Spin, Button, Tabs } from "antd";
+import { message, Modal, Spin, Button, Tabs, Rate } from "antd";
 import { useNavigate } from "react-router";
 import { LoginContext } from "../App";
 import TourCard from "./TourCard";
@@ -17,7 +17,44 @@ const UserProfile = () => {
 	const navigate = useNavigate();
 	const { loggedIn, setLoggedIn } = useContext(LoginContext);
 	const [tours, setTours] = useState([]);
-	const [showDeleteModal, setShowDeleteModal] = useState(false);
+	const [bookingHistory, setBookingHistory] = useState([])
+	const [isRatingModalVisible, setIsRatingModalVisible] = useState(false);
+	const [currentRating, setCurrentRating] = useState(0);
+	const [currentBookingId, setCurrentBookingId] = useState(null);
+
+	const handleRateTour = (bookingId, tourName, initialRating = 0) => {
+		setCurrentBookingId(bookingId);
+		setCurrentRating(initialRating);
+		setIsRatingModalVisible(true);
+	};
+
+	const handleRatingSubmit = () => {
+		if (!currentBookingId) return;
+
+		const body = {
+			bookingId: currentBookingId,
+			rating: currentRating,
+			username: sessionStorage.getItem("username")
+		}
+
+		fetch(`${backend_url}/tour/rate`, {
+			method: "POST",
+			credentials: "include",
+			headers: {
+				"Content-Type": "application/json"
+			},
+			body: JSON.stringify(body)
+		})
+			.then(res => res.json())
+			.then(data => {
+				console.log(data)
+				setBookingHistory(data)
+			})
+			.finally(() => {
+				setIsRatingModalVisible(false);
+			});
+
+	};
 
 	const handleDeleteItem = (itemName, tourId) => {
 		fetch(`${backend_url}/tour/delete`, {
@@ -53,6 +90,28 @@ const UserProfile = () => {
 			})
 	};
 
+	const handleCancelTour = (bookingId) => {
+		const body = {
+			bookingId: bookingId,
+			username: sessionStorage.getItem("username")
+		}
+
+		console.log(body)
+		fetch(`${backend_url}/booking/cancel`, {
+			method: "POST",
+			credentials: "include",
+			headers: {
+				"Content-Type": "application/json"
+			},
+			body: JSON.stringify(body)
+		})
+			.then(res => res.json())
+			.then(data => {
+				setBookingHistory(data)
+				message.info("Cancel Tour Succes")
+			})
+	}
+
 	const handleShowModal = (itemName, tourId) => {
 		console.log(itemName, tourId);
 		Modal.confirm({
@@ -68,8 +127,12 @@ const UserProfile = () => {
 		});
 	};
 
+
+
 	useEffect(() => {
 		setLoading(true);
+
+		//------------ get user information-----------------
 		fetch(
 			`${backend_url}/auth/getdetails/${sessionStorage.getItem("username")}`,
 			{
@@ -85,8 +148,33 @@ const UserProfile = () => {
 				setLoading(false);
 			});
 
+
+		// ---------------get user postings -----------------
 		fetch(
 			`${backend_url}/tour/getbyusername/${sessionStorage.getItem("username")}`,
+			{
+				method: "GET",
+				credentials: "include",
+			}
+		)
+			.then((res) => {
+				if (!res.ok) {
+					setLoggedIn(false)
+					message.error("You are not logged in")
+					navigate("/login")
+				} else {
+					console.log(res);
+					return res.json();
+				}
+			})
+			.then((data) => {
+				console.log("uploaded tours", data);
+				setTours(data);
+			});
+
+		// -------------get user bookings -----------------
+		fetch(
+			`${backend_url}/getbookings/${sessionStorage.getItem("username")}`,
 			{
 				method: "GET",
 				credentials: "include",
@@ -98,8 +186,8 @@ const UserProfile = () => {
 				return res.json();
 			})
 			.then((data) => {
-				console.log(data);
-				setTours(data);
+				console.log("booked", data);
+				setBookingHistory(data)
 			});
 	}, []);
 
@@ -126,12 +214,6 @@ const UserProfile = () => {
 		name: username,
 		email: email,
 	};
-
-	const bookingHistory = [
-		{ id: 1, date: "2023-10-01", service: "Hotel Booking", amount: "$150" },
-		{ id: 2, date: "2023-09-25", service: "Flight Booking", amount: "$300" },
-		{ id: 3, date: "2023-09-20", service: "Car Rental", amount: "$80" },
-	];
 
 	return (
 		<Spin spinning={loading}>
@@ -173,27 +255,57 @@ const UserProfile = () => {
 
 				{/* Tabs for Booking History and Tours */}
 				<Tabs defaultActiveKey="1" className={styles.tabsContainer}>
-					<TabPane tab="Booking History" key="1">
+					<TabPane tab="Booking Information" key="1">
 						<div className={styles.bottomSection}>
-							<h3>Booking History</h3>
+							<h3>Booking Information</h3>
 							<table className={styles.bookingTable}>
 								<thead>
 									<tr>
+										<th>Tour</th>
 										<th>Date</th>
-										<th>Service</th>
-										<th>Amount</th>
+										<th>Price</th>
+										<th>Cancel Tour</th>
+										<th>Rate Tour</th>
+
 									</tr>
 								</thead>
 								<tbody>
 									{bookingHistory.map((booking) => (
 										<tr key={booking.id}>
-											<td>{booking.date}</td>
-											<td>{booking.service}</td>
-											<td>{booking.amount}</td>
+											<td>{booking.tour.name}</td>
+											<td>{booking.tour.description}</td>
+											<td>${booking.tour.price}</td>
+											<td>
+												<Button type="default" danger disabled={booking.deleted} onClick={() => handleCancelTour(booking.bookingId)}>
+													Cancel Tour
+												</Button>
+											</td>
+											<td>
+												<Button
+													type="default"
+													disabled={booking.deleted}
+													onClick={() => handleRateTour(booking.bookingId, booking.tour.name, booking.rating)}
+												>
+													Rate Tour
+												</Button>
+											</td>
 										</tr>
 									))}
 								</tbody>
 							</table>
+							<Modal
+								title="Rate Tour"
+								visible={isRatingModalVisible}
+								onOk={handleRatingSubmit}
+								onCancel={() => setIsRatingModalVisible(false)}
+								okText="Submit Rating"
+								cancelText="Cancel"
+							>
+								<Rate
+									value={currentRating}
+									onChange={(value) => setCurrentRating(value)}
+								/>
+							</Modal>
 						</div>
 					</TabPane>
 

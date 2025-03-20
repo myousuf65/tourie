@@ -89,7 +89,7 @@ const UploadTour = () => {
 					</div>
 
 					<div className={styles.formGroup}>
-						<label htmlFor="tourDescription">Tour Description:</label>
+						<label htmlFor="tourDescription">Date and Time:</label>
 						<textarea
 							id="tourDescription"
 							value={tourDescription}
