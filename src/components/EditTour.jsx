@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import styles from "../styles/EditTour.module.css"
-import { message, Spin } from 'antd';
+import { message, Spin, List, Rate, Tabs } from 'antd';
 import { useNavigate } from 'react-router';
 import { storage } from '../config/firebase';
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage"
+import TabPane from 'antd/es/tabs/TabPane';
 
 
 const EditTour = () => {
@@ -19,6 +20,20 @@ const EditTour = () => {
 	const [tourPhoto, setTourPhoto] = useState(null);
 	const [loading, setLoading] = useState(false)
 	const [imageError, setImageError] = useState(false);
+	const [bookings, setBookings] = useState([])
+
+	// const ratings = [
+	// 	{
+	// 		"username": "user1",
+	// 		"rating": 4,
+	// 		"comment": "Great tour!"
+	// 	},
+	// 	{
+	// 		"username": "user2",
+	// 		"rating": 5,
+	// 		"comment": "Amazing experience!"
+	// 	}
+	// ]
 
 	useEffect(() => {
 		const tour = JSON.parse(window.localStorage.getItem("edit"));
@@ -32,6 +47,13 @@ const EditTour = () => {
 			});
 			setImageError(false);
 		}
+
+		fetch(`${backend_url}/tour/getratings/${tour.tourId}`, {
+			method: "GET",
+			credentials: "include"
+		})
+			.then(res => res.json())
+			.then(data => setBookings(data))
 	}, []);
 
 	const handleInputChange = (e) => {
@@ -141,81 +163,109 @@ const EditTour = () => {
 	}
 
 	const handleCancel = () => {
-
+		navigate(-1)
 	}
+
+	const { TabPane } = Tabs;
 
 	return (
 		<div className={styles.container}>
 			<Spin spinning={loading}>
 				<h2 className={styles.title}>Edit Tour</h2>
-				<div className={styles.formContainer}>
-					<div className={styles.form}>
-						<div className={styles.formGroup}>
-							<label htmlFor="name">Name:</label>
-							<input
-								type="text"
-								id="name"
-								name="name"
-								value={editedTour.name}
-								onChange={handleInputChange}
-							/>
-						</div>
-						<div className={styles.formGroup}>
-							<label htmlFor="description">Date and Time:</label>
-							<textarea
-								id="description"
-								name="description"
-								value={editedTour.description}
-								onChange={handleInputChange}
-							/>
-						</div>
-						<div className={styles.formGroup}>
-							<label htmlFor="price">Price:</label>
-							<input
-								type="number"
-								id="price"
-								name="price"
-								value={editedTour.price}
-								onChange={handleInputChange}
-							/>
-						</div>
-						<div className={styles.formGroup}>
-							<label htmlFor="photoUrl">Photo URL:</label>
-							<input
-								type="text"
-								id="photoUrl"
-								name="photoUrl"
-								value={editedTour.photoUrl}
-								onChange={handleInputChange}
-							/>
-						</div>
-						<div className={styles.formGroup}>
-							<label htmlFor="tourPhoto">Tour Photo:</label>
-							<input
-								type="file"
-								id="tourPhoto"
-								accept="image/*"
-								onChange={(e) => setTourPhoto(e.target.files[0])}
-								required
-							/>
-						</div>
 
-						<div className={styles.buttons}>
-							<button className={styles.cancelButton} onClick={handleCancel} >
-								Cancel
-							</button>
-							<button className={styles.saveButton} onClick={handleSave} >
-								Save
-							</button>
+				<Tabs defaultActiveKey="1">
+					{/* Tab 1: Form Section */}
+					<TabPane tab="Edit Tour" key="1">
+						<div className={styles.formContainer}>
+							<div className={styles.form}>
+								<div className={styles.formGroup}>
+									<label htmlFor="name">Name:</label>
+									<input
+										type="text"
+										id="name"
+										name="name"
+										value={editedTour.name}
+										onChange={handleInputChange}
+									/>
+								</div>
+								<div className={styles.formGroup}>
+									<label htmlFor="description">Date and Time:</label>
+									<textarea
+										id="description"
+										name="description"
+										value={editedTour.description}
+										onChange={handleInputChange}
+									/>
+								</div>
+								<div className={styles.formGroup}>
+									<label htmlFor="price">Price:</label>
+									<input
+										type="number"
+										id="price"
+										name="price"
+										value={editedTour.price}
+										onChange={handleInputChange}
+									/>
+								</div>
+								<div className={styles.formGroup}>
+									<label htmlFor="photoUrl">Photo URL:</label>
+									<input
+										type="text"
+										id="photoUrl"
+										name="photoUrl"
+										value={editedTour.photoUrl}
+										onChange={handleInputChange}
+									/>
+								</div>
+								<div className={styles.formGroup}>
+									<label htmlFor="tourPhoto">Tour Photo:</label>
+									<input
+										type="file"
+										id="tourPhoto"
+										accept="image/*"
+										onChange={(e) => setTourPhoto(e.target.files[0])}
+										required
+									/>
+								</div>
+
+								<div className={styles.buttons}>
+									<button className={styles.cancelButton} onClick={handleCancel}>
+										Cancel
+									</button>
+									<button className={styles.saveButton} onClick={handleSave}>
+										Save
+									</button>
+								</div>
+							</div>
+
+							<div className={styles.imagePreview}>
+								<img
+									src={editedTour.photoUrl}
+									alt="Tour Preview"
+								/>
+							</div>
 						</div>
-					</div>
-					<div className={styles.imagePreview}>
-						<img
-							src={editedTour.photoUrl}
-							alt="Tour Preview"
-						/>
-					</div>
-				</div>
+					</TabPane>
+
+					{/* Tab 2: Ratings Section */}
+					<TabPane tab="Ratings" key="2">
+						<div className={styles.ratingsSection}>
+							<h3>Ratings</h3>
+							<List
+								dataSource={bookings}
+								renderItem={booking => (
+									<List.Item>
+										<List.Item.Meta
+											title={booking.user.name}
+											description={<Rate disabled defaultValue={booking.rating} />}
+										/>
+										<div>{booking.comment}</div>
+									</List.Item>
+								)}
+							/>
+						</div>
+					</TabPane>
+				</Tabs>
 			</Spin>
 		</div>
 	);

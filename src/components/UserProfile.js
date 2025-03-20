@@ -4,7 +4,6 @@ import User from "../images/user.png";
 import { message, Modal, Spin, Button, Tabs, Rate } from "antd";
 import { useNavigate } from "react-router";
 import { LoginContext } from "../App";
-import TourCard from "./TourCard";
 import EditableTourCard from "./EditableTourCard";
 
 const { TabPane } = Tabs;
